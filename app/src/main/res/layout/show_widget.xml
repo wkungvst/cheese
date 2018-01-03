@@ -1,0 +1,71 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="100dp"
+    android:orientation="vertical"
+    android:background="@color/primary">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="99dp"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+    <TextView
+        android:id="@+id/show_title"
+        android:layout_toLeftOf="@+id/show_image"
+        android:textColor="#555555"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="23sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/show_date"
+        android:textColor="#777777"
+        android:textSize="17sp"
+        android:layout_above="@+id/show_venue"
+        android:textStyle="bold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/show_location"
+        android:textColor="#aaaaaa"
+        android:layout_toRightOf="@+id/show_venue"
+        android:layout_alignParentBottom="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="1"/>
+
+    <TextView
+        android:id="@+id/show_venue"
+        android:textColor="#aaaaaa"
+        android:layout_alignParentBottom="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="1"/>
+
+    <ImageView
+        android:id="@+id/show_image"
+        android:layout_alignParentRight="true"
+        android:src="@drawable/cheese"
+        android:layout_width="80dp"
+        android:layout_marginLeft="10dp"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+
+    </RelativeLayout>
+
+    <View
+        android:id="@+id/border"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#eeeeee"
+        android:layout_alignParentBottom="true"/>
+
+</LinearLayout>
