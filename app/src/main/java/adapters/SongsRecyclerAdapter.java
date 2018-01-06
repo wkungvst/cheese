@@ -93,6 +93,16 @@ public class SongsRecyclerAdapter extends RecyclerView.Adapter<SongsRecyclerAdap
         });
     }
 
+    public void updateCurrentSong(MainViewModel.SongObject song){
+        for(MainViewModel.SongObject s : dataSet){
+            if(song == s){
+                row_index = dataSet.indexOf(s);
+            }
+        }
+        notifyDataSetChanged();
+
+    }
+
     @Override
     public int getItemCount() {
         return dataSet.size();

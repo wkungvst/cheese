@@ -51,6 +51,7 @@ public class MainViewModel {
     private BehaviorSubject<ShowObject> mCurrentShow = BehaviorSubject.create();
     private BehaviorSubject<NetworkException> mError = BehaviorSubject.create();
     public Observable<NetworkException> getErrorObservable(){ return mError.asObservable();}
+    public Observable<String> getNextAudioLink(){ return mNextAudioLink.asObservable();}
     public ShowObject getCurrentShow(){return mCurrentShow.getValue();}
     private BehaviorSubject<Boolean> mIsPlaying = BehaviorSubject.create(false);
     public Observable<Boolean> getIsPlaying(){ return mIsPlaying.asObservable();}
@@ -124,7 +125,6 @@ public class MainViewModel {
                     SongObject nextSong = i.next();
                     Log.d("@@@", " reset next audio link! " + nextSong.title);
                     String nextLink = "https://www.archive.org/download/" + nextSong.rootname + "/" + nextSong.name;
-                    //mNextAudioLink.onNext(nextLink);
                     openSong(nextSong,null);
                 }
             }
@@ -168,14 +168,21 @@ public class MainViewModel {
                 coverage = obj.getString("coverage");
                 venue = obj.getString("venue");
                 date = obj.getString("date");
-                if(date.length() > 15){ date = date.substring(0,date.length() - 10);}
+                if(date.length() > 15){
+                    date = date.substring(0,date.length() - 10);
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                    Date newDate = format.parse(date);
+                    format = new SimpleDateFormat("MM-dd-yyyy");
+                    date = format.format(newDate);
+                    if(date.substring(0,1).equals("0")){
+                        date = date.substring(1,date.length());
+                    }
+                }
                 title = obj.getString("title").replace(mBandsMap.get(mCurrentBand.getValue()).canonical, "");
                 if(title.length() > 15){ title = title.substring(0, title.length() - 14);}
             }catch(Exception e){
                 mError.onNext(new NetworkException(NetworkException.TYPE.JSON," view model: parseShowsOfYear " + e.getMessage()));
-                //don't worry be happy
             }
-            Log.d("@@@", " new show object. date: " + obj.getString("date"));
             list.add(new ShowObject(
                     title,
                     coverage,
@@ -282,6 +289,7 @@ public class MainViewModel {
         ArrayList<SongObject> results = new ArrayList<>();
 
         String location = "http://www.archive.org/download/" + id + "/" + id + "_files.xml";
+        Log.d("@@@, ", " location: " + location);
         StringRequest req = new StringRequest(Request.Method.GET, location,
                 response -> {
                     try {
@@ -326,18 +334,39 @@ public class MainViewModel {
         String name = "" , album= "", title = "", length = "", link ="";
         int track = 0;
         for(int i=0;i<array.length();i++){
+            // mp3 format
+            JSONObject song = array.getJSONObject(i);
             if(array.getString(i).contains(".mp3")){
-                JSONObject song = array.getJSONObject(i);
                 try{
                     name = song.getString("name");
                     title = song.getString("title");
                     length = song.getString("length");
                     track = Integer.parseInt(song.getString("track"));
+                    SongObject songObject = new SongObject(root, name, title, length, track);
+                    results.add(songObject);
                 }catch (Exception e){
                     mError.onNext(new NetworkException(NetworkException.TYPE.JSON,"view model: parseSongsForShow " + e.getMessage()));
                 }
-                SongObject songObject = new SongObject(root, name, title, length, track);
-                results.add(songObject);
+            }
+        }
+        // maybe it's a flac
+        if(results.size() == 0){
+            for(int i=0;i<array.length();i++){
+                // mp3 format
+                JSONObject song = array.getJSONObject(i);
+                Log.d("@@@", " we have a song " + song.getString("name"));
+                if(song.getString("name").contains(".flac")){
+                    try{
+                        name = song.getString("name");
+                        title = song.getString("title");
+                        length = song.getString("length");
+                        track = Integer.parseInt(song.getString("track"));
+                        SongObject songObject = new SongObject(root, name, title, length, track);
+                        results.add(songObject);
+                    }catch (Exception e){
+                        mError.onNext(new NetworkException(NetworkException.TYPE.JSON,"view model: parseSongsForShow " + e.getMessage()));
+                    }
+                }
             }
         }
         Collections.sort(results, (song1, song2) -> {

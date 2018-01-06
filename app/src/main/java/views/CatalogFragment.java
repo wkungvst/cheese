@@ -154,7 +154,13 @@ public class CatalogFragment extends Fragment implements ICatalogInterface, ISho
         mMainViewModel.getSongsObservable().subscribe(songs->{
             if(songs.size() > 0){
                 populateSongList(songs);
+            }else{
+                Log.d("@@@", " cant populate songs. size is 0");
             }
+        });
+
+        mMainViewModel.getCurrentSongObservable().subscribe(song->{
+            mSongsRecyclerAdapter.updateCurrentSong(song);
         });
     }
 

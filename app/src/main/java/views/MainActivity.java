@@ -52,10 +52,12 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private ICatalogInterface mCatalogInterface;
     private MainViewModel.ShowObject mLatestShowObject;
     private MediaPlayer mMediaPlayer;
-    private MediaPlayer mMediaPlayerNext;
+    private MediaPlayer mNextMediaPlayer;
     private SeekBar mSeekbar;
     private TextView mPlayerSong;
     private String mBandName = "";
+    private Boolean mSongHasPlayed = false;
+
 
     private static String[] TABS = {"Jam Of The Day", "Catalog"};
 
@@ -72,7 +74,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         mSeekbar = findViewById(R.id.player_seekbar);
         mPlayerSong = findViewById(R.id.player_song);
         mMediaPlayer = new MediaPlayer();
-        mMediaPlayerNext = new MediaPlayer();
 
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -117,10 +118,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         mCompositeSubscription.add(mMainViewModel.getSongsObservable().subscribe(songs->{
             if(songs.size() > 0){
-                for(MainViewModel.SongObject s : songs){
-               //     Log.d("@@@, ", " song name" + s.title + " track # " + s.track);
-                }
                 expandHeader(false);
+            }else{
+                Log.d("@@@", "songs observable. size is 0");
             }
         }));
 
@@ -140,12 +140,11 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                 ((ImageButton)findViewById(R.id.play_pause)).setImageResource(playing? R.drawable.pause : R.drawable.play);
                 if(playing){
                     if(!mMediaPlayer.isPlaying()){
-                        Log.d("@@@", " not already playing, start playing");
+                        Log.d("@@@", "mediaPlayer start");
                         mMediaPlayer.start();
-                    }else{
-                        Log.d("@@@", " already playing, dont start again");
                     }
                 }else{
+                    Log.d("@@@", "mediaPlayer pause");
                     mMediaPlayer.pause();
                 }
             }
@@ -161,9 +160,35 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             }
         }).subscribe());
 
+        mCompositeSubscription.add(mMainViewModel.getErrorObservable().subscribe(error->{
+            Log.d("@@@", " error: " + error.getMessage());
+        }));
+
+        mCompositeSubscription.add(mMainViewModel.getNextAudioLink().subscribe(nextAudio->{
+            prepareNextSong(nextAudio);
+        }));
+
         RxView.clicks(findViewById(R.id.play_pause)).subscribe(click->{
             toggleAudio();
         });
+
+        RxView.clicks(findViewById(R.id.play_prev)).subscribe(click->{
+            seekToPrevious();
+        });
+
+        RxView.clicks(findViewById(R.id.play_next)).subscribe(click->{
+            seekToNext();
+        });
+    }
+
+    private void seekToNext(){
+        mMainViewModel.prepareNextSong();
+    }
+
+    private void seekToPrevious(){
+        if(mMediaPlayer.isPlaying()){
+            mMediaPlayer.seekTo(0);
+        }
     }
 
     private void expandHeader(boolean expand){
@@ -209,9 +234,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     }
 
     private void playAudio(String audio){
-        Log.d("@@@", " playAudio. audio link " + URI.create(audio));
-        Uri uri = Uri.parse(audio);
-        // Log.d("@@@, ", " track length: " + Integer.parseInt(audio))
 
         if(mMediaPlayer == null){
             mMediaPlayer = new MediaPlayer();
@@ -225,14 +247,22 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         try {
             Log.d("@@@, "," media player prepare");
+            mSongHasPlayed = false;
             mMediaPlayer.reset();
             mMediaPlayer.setDataSource(audio);
             mMediaPlayer.setOnPreparedListener(mediaPlayer -> {
-                mMediaPlayer.start();
+                // start audio playback
+                mMainViewModel.startAudio();
                 mMediaPlayer.setOnCompletionListener(player -> {
-                   // get next song
-                   // mMainViewModel.prepareNextSong();
+                    Log.d("@@@", " media player on complete. prepare next song");
+                    if(mSongHasPlayed){
+                        mMainViewModel.prepareNextSong();
+                    }else{
+                        Log.d("@@@", " song hasn't even played yet. don't prepare next song");
+                    }
+                   // prepareNextSong();
                 });
+                mSongHasPlayed = true;
                 mSeekbar.setMax(mMediaPlayer.getDuration());
                 mSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
@@ -244,7 +274,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                         if(mMediaPlayer != null && fromUser){
-                            Log.d("@@@", " seek to: " + (progress*1000));
+                            //Log.d("@@@", " seek to: " + (progress*1000));
                             mMediaPlayer.seekTo(progress);
                         }
                     }
@@ -267,7 +297,18 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             e.printStackTrace();
             Log.d("@@@", " something went wrong creating media player");
         }
-        mMainViewModel.startAudio();
+    }
+
+    private void prepareNextSong(String audioLink){
+        MediaPlayer nextMediaPlayer = new MediaPlayer();
+        nextMediaPlayer.setVolume(10.0f,10.0f);
+        try {
+            nextMediaPlayer.setDataSource(audioLink);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void updateCatalog(){

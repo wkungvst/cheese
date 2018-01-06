@@ -19,6 +19,17 @@
         android:layout_height="wrap_content"/>
 
     <ImageButton
+        android:id="@+id/play_prev"
+        android:layout_below="@+id/player_song"
+        android:background="@null"
+        android:layout_width="50dp"
+        android:layout_height="80dp"
+        android:gravity="center"
+        android:src="@drawable/prev"
+        android:scaleType="fitCenter"
+        android:layout_toLeftOf="@+id/play_pause"/>
+
+    <ImageButton
         android:id="@+id/play_pause"
         android:layout_below="@+id/player_song"
         android:background="@null"
@@ -27,6 +38,17 @@
         android:layout_height="80dp"
         android:src="@drawable/play"
         android:scaleType="fitCenter"/>
+
+    <ImageButton
+        android:id="@+id/play_next"
+        android:layout_below="@+id/player_song"
+        android:background="@null"
+        android:layout_width="50dp"
+        android:layout_height="80dp"
+        android:gravity="center"
+        android:src="@drawable/next"
+        android:scaleType="fitCenter"
+        android:layout_toRightOf="@+id/play_pause"/>
 
     <SeekBar
         android:id="@+id/player_seekbar"
