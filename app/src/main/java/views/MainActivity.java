@@ -1,6 +1,10 @@
 package views;
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -8,15 +12,25 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.text.Html;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -56,7 +70,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private SeekBar mSeekbar;
     private TextView mPlayerSong;
     private String mBandName = "";
+    private EditText mSearchEdit;
     private Boolean mSongHasPlayed = false;
+    private FloatingActionButton mBandsButton;
 
 
     private static String[] TABS = {"Jam Of The Day", "Catalog"};
@@ -68,12 +84,30 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         mMainViewModel = new MainViewModel(this);
         mMainPagerAdapter = new MainPagerAdapter(this, getSupportFragmentManager());
-        mMainViewModel.setup();
+        Bundle extras = getIntent().getExtras();
+        if (extras != null && extras.getString("BAND") != null){
+            mMainViewModel.setup(extras.getString("BAND"));
+        }else{
+            mMainViewModel.setup();
+        }
         mTabLayout = (TabLayout)findViewById(R.id.tab_layout);
         mViewPager = (ViewPager)findViewById(R.id.pager);
         mSeekbar = findViewById(R.id.player_seekbar);
         mPlayerSong = findViewById(R.id.player_song);
+        mSearchEdit = findViewById(R.id.search_edittext);
+        mBandsButton = findViewById(R.id.bands_button);
+        mBandsButton.setOnClickListener(view -> openBandsPopup());
+
+        RxView.clicks(findViewById(R.id.bands_popup_cancel)).subscribe(
+            click->{
+                closeBandsPopup();
+            }
+        );
+
         mMediaPlayer = new MediaPlayer();
+
+        mSeekbar.getProgressDrawable().setColorFilter(Color.parseColor("#ffffff"), PorterDuff.Mode.SRC_IN);
+        mSeekbar.getThumb().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
 
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -86,8 +120,12 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         mViewPager.setAdapter(new MainPagerAdapter(this, getSupportFragmentManager()));
         mTabLayout.setupWithViewPager(mViewPager);
-
+        initialize();
         addSubscriptions();
+    }
+
+    private void initialize(){
+        mSearchEdit.setHint(Html.fromHtml("<b>search </b>song names <b>&#9834; &#9835; </b>"));
     }
 
     private void addSubscriptions(){
@@ -131,8 +169,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         }));
 
         mCompositeSubscription.add(mMainViewModel.getCurrentSongObservable().subscribe(songObject->{
-            findViewById(R.id.player).setVisibility(View.VISIBLE);
-            populatePlayer(songObject);
+            if(songObject != null){
+                mMainViewModel.openPlayer();
+                populatePlayer(songObject);
+            }
         }));
 
         mCompositeSubscription.add(mMainViewModel.getIsPlaying().subscribe(
@@ -164,9 +204,35 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             Log.d("@@@", " error: " + error.getMessage());
         }));
 
+        mCompositeSubscription.add(mMainViewModel.getIsSearchingObservable().subscribe(searching->{
+            if(searching){
+            //    findViewById(R.id.search_progress).setVisibility(View.VISIBLE);
+            }else{
+             //    findViewById(R.id.search_progress).setVisibility(View.GONE);
+            }
+        }));
+
         mCompositeSubscription.add(mMainViewModel.getNextAudioLink().subscribe(nextAudio->{
             prepareNextSong(nextAudio);
         }));
+
+        // search song - show result count
+        mCompositeSubscription.add(mMainViewModel.getSearchResultCountObservable().subscribe(count->{
+            if(count > 0){
+                showSearchResultCount(count);
+            }else{
+                // TODO: show no results screen
+            }
+        }));
+
+        mCompositeSubscription.add(mMainViewModel.getPlayerVisibleObservable().subscribe(visible->{
+            Log.d("@@@, ", " should be visible? " + visible);
+            findViewById(R.id.player).setVisibility(visible? View.VISIBLE : View.GONE);
+        }));
+
+        findViewById(R.id.player_close).setOnClickListener(click->{
+            mMainViewModel.closePlayer();
+        });
 
         RxView.clicks(findViewById(R.id.play_pause)).subscribe(click->{
             toggleAudio();
@@ -179,6 +245,57 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         RxView.clicks(findViewById(R.id.play_next)).subscribe(click->{
             seekToNext();
         });
+
+        RxView.clicks(findViewById(R.id.search_result_container)).subscribe(click->{
+            showSearchButton(true);
+        });
+
+        ((EditText)findViewById(R.id.search_edittext)).setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    performSearch();
+                    return true;
+                }
+                return false;
+            }
+        });
+    }
+
+    private void closeBandsPopup(){
+        findViewById(R.id.bands_popup).setVisibility(View.GONE);
+    }
+
+    private void clearSearch(){
+        ((EditText)findViewById(R.id.search_edittext)).setText("");
+    }
+
+    private void showSearchButton(boolean show){
+        Log.d("@@@", " show search button");
+        findViewById(R.id.search_button).setVisibility(show ? View.VISIBLE : View.GONE);
+        findViewById(R.id.search_result_container).setVisibility(show ? View.GONE : View.VISIBLE);
+    }
+
+    private void showSearchResultCount(int count){
+        findViewById(R.id.search_button).setVisibility(View.GONE);
+        findViewById(R.id.search_result_container).setVisibility(View.VISIBLE);
+        ((TextView)findViewById(R.id.search_result_count)).setText(count + " RESULTS");
+    }
+
+    private void performSearch(){
+        closeKeyboard();
+        String term = ((EditText)findViewById(R.id.search_edittext)).getText().toString();
+        if(term.length()  == 0 )return;
+        performSearch(term);
+    }
+
+    private void performSearch(String term){
+        mMainViewModel.performSearch(term);
+    }
+
+    private void closeKeyboard(){
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(((EditText)findViewById(R.id.search_edittext)).getWindowToken(), 0);
     }
 
     private void seekToNext(){
@@ -202,9 +319,11 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private void populatePlayer(MainViewModel.SongObject songObject){
         TextView marquee = ((TextView)findViewById(R.id.player_song));
         marquee.setText(songObject.title);
-    //    marquee.setHorizontallyScrolling(true);
-    //    marquee.setSelected(true);
         expandHeader(false);
+    }
+
+    private void openBandsPopup() {
+        findViewById(R.id.bands_popup).setVisibility(View.VISIBLE);
     }
 
     private void populateNowPlaying(MainViewModel.ShowObject show){
@@ -313,6 +432,12 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
     private void updateCatalog(){
         mMainViewModel.updateCatalog();
+    }
+
+    private void openNewBand(String band){
+        Intent intent = new Intent(MainActivity.this, MainActivity.class);
+        intent.putExtra("BAND", band);
+        startActivity(intent);
     }
 
     @Override

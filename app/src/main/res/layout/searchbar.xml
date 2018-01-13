@@ -1,18 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="50dp"
-    android:background="#cccccc"
-    android:padding="2dp">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="70dp"
+    android:background="@color/secondary"
+    android:paddingTop="10dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingBottom="4dp">
+
+    <LinearLayout
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:layout_width="0px"
+        android:layout_height="0px"/>
 
     <EditText
+        android:id="@+id/search_edittext"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="52dp"
         android:background="#ffffff"
         android:hint="search song names"
-        android:padding="5dp"
-        android:paddingLeft="10dp"
+        android:paddingLeft="15dp"
         android:textColor="#888888"
-        android:textColorHint="#dddddd"/>
+        android:textSize="20sp"
+        android:textColorHint="#bbbbbb"
+        android:imeOptions="actionSearch"
+        android:inputType="text"
+        android:elevation="4dp"/>
 
-</LinearLayout>
+    <ImageButton
+        android:id="@+id/search_button"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="9dp"
+        android:layout_width="50dp"
+        android:gravity="center"
+        android:layout_centerVertical="true"
+        android:layout_height="34dp"
+        android:src="@drawable/search"
+        android:background="#444444"
+        android:elevation="4dp" />
+
+    <RelativeLayout
+        android:id="@+id/search_result_container"
+        android:clickable="true"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginTop="10dp"
+        android:background="@color/primary_dark"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:padding="5dp"
+        android:elevation="6dp"
+        android:layout_marginRight="10dp">
+
+        <TextView
+            android:id="@+id/search_result_count"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="34 RESULTS"
+            android:layout_marginLeft="5dp"/>
+
+        <ImageButton
+            android:id="@+id/search_result_close"
+            android:clickable="false"
+            android:layout_marginLeft="5dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:background="@null"
+            android:layout_toRightOf="@+id/search_result_count"
+            android:src="@drawable/close"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_alignParentRight="true"
+        android:id="@+id/search_progress_container"
+        android:layout_width="20dp"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+        <ProgressBar
+            android:id="@+id/search_progress"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_centerInParent="true" />
+
+    </RelativeLayout>
+
+</RelativeLayout>

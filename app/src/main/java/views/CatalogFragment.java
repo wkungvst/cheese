@@ -54,7 +54,7 @@ public class CatalogFragment extends Fragment implements ICatalogInterface, ISho
     ICatalogListener mListener;
     RecyclerView mShowsRecyclerView;
     RecyclerView mSongsRecyclerView;
-
+    CatalogAdapter mArrayAdapter;
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -65,13 +65,13 @@ public class CatalogFragment extends Fragment implements ICatalogInterface, ISho
             yearObjectList.add(new YearObject(i, yearData.get(i)));
         }
 
-        CatalogAdapter arrayAdapter = new CatalogAdapter(
+        mArrayAdapter = new CatalogAdapter(
                 getActivity(),
                 R.layout.catalog_listview_item,
                 yearObjectList);
 
         mPrimaryListView.setNestedScrollingEnabled(true);
-        mPrimaryListView.setAdapter(arrayAdapter);
+        mPrimaryListView.setAdapter(mArrayAdapter);
     }
 
     @Override
@@ -176,6 +176,7 @@ public class CatalogFragment extends Fragment implements ICatalogInterface, ISho
         mPrimaryContainer.setVisibility(View.GONE);
         mSecondaryContainer.setVisibility(View.GONE);
         mSongsContainer.setVisibility(View.VISIBLE);
+        mArrayAdapter.notifyDataSetChanged();
     }
 
     private void populateSecondaryList(ArrayList<MainViewModel.ShowObject> shows){
@@ -192,6 +193,7 @@ public class CatalogFragment extends Fragment implements ICatalogInterface, ISho
         mSongsContainer.setVisibility(View.GONE);
         mSecondaryContainer.setVisibility(View.VISIBLE);
         mBackButton.setVisibility(View.VISIBLE);
+        mArrayAdapter.notifyDataSetChanged();
     }
 
     private class YearObject{
@@ -232,6 +234,7 @@ public class CatalogFragment extends Fragment implements ICatalogInterface, ISho
                 ((TextView)view.findViewById(R.id.catalog_number_shows)).setText(yearObject.shows + " SHOWS");
             }
             RxView.clicks(view).subscribe(c->{
+                view.findViewById(R.id.catalog_year_progress).setVisibility(View.VISIBLE);
                 showSecondaryView(yearObject.year);
             });
             return view;

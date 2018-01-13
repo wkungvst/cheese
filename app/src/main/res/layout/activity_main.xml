@@ -15,6 +15,7 @@
         android:fitsSystemWindows="false">
 
         <android.support.design.widget.CollapsingToolbarLayout
+            android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
@@ -65,19 +66,16 @@
                     android:layout_height="100dp"
                     android:layout_below="@+id/latest_show_tag" />
 
-                <include
-                    layout="@layout/searchbar"
-                    android:id="@+id/searchbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:layout_below="@+id/show_widget"
-                    android:layout_marginTop="10dp"/>
-
             </RelativeLayout>
 
         </android.support.design.widget.CollapsingToolbarLayout>
-
         <include layout="@layout/player" android:id="@+id/player" android:visibility="gone"/>
+        <include
+            layout="@layout/searchbar"
+            android:id="@+id/searchbar"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_below="@+id/player" />
 
     </android.support.design.widget.AppBarLayout>
 
@@ -91,10 +89,12 @@
 
         <android.support.design.widget.TabLayout
             android:id="@+id/tab_layout"
+            app:tabTextAppearance="@style/tab_layout"
             app:tabIndicatorColor="#444444"
             app:tabIndicatorHeight="4dp"
             app:tabBackground="@color/secondary"
             app:tabTextColor="#ffffff"
+            android:textSize="25sp"
             app:tabSelectedTextColor="#444444"
             android:layout_width="match_parent"
             android:background="@color/primary_dark"
@@ -141,8 +141,25 @@
             android:layout_marginBottom="30dp"
             android:textSize="11sp"
             android:textColor="#888888"
-            android:text="ig: abrahamlincoln420"/>
+            android:text="ig: abrahamdslincoln420"/>
 
     </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/bands_button"
+            android:src="@drawable/dead"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_margin="20dp"
+            app:fabSize="normal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </RelativeLayout>
+
+
+    <include layout="@layout/bands_popup" ></include>
 
 </android.support.design.widget.CoordinatorLayout>

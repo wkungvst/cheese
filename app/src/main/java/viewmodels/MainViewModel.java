@@ -1,7 +1,6 @@
 package viewmodels;
 
 import android.content.Context;
-import android.os.Handler;
 import android.util.Log;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -18,13 +17,13 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
-
 import exceptions.NetworkException;
+import helpers.Helper;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 import static viewmodels.MainViewModel.BAND.GRATEFUL_DEAD;
@@ -43,17 +42,22 @@ public class MainViewModel {
     private BehaviorSubject<AbstractMap.SimpleEntry<Integer,ShowObject>> mMetaData = BehaviorSubject.create();
     private BehaviorSubject<TreeMap<Integer,Integer>> mYearData = BehaviorSubject.create(new TreeMap());
     private BehaviorSubject<ArrayList<ShowObject>> mShowObjectsForYear = BehaviorSubject.create();
+    private BehaviorSubject<Integer> mSearchResultCount = BehaviorSubject.create();
     private BehaviorSubject<ArrayList<SongObject>> mSongs = BehaviorSubject.create();
+    private BehaviorSubject<Boolean> mIsSearching = BehaviorSubject.create(false);
+    public Observable<Boolean> getIsSearchingObservable(){ return mIsSearching.asObservable();}
     private BehaviorSubject<String> mAudioLink = BehaviorSubject.create();
     private BehaviorSubject<String> mNextAudioLink = BehaviorSubject.create();
+    private BehaviorSubject<Boolean> mPlayerVisible = BehaviorSubject.create(false);
+    public Observable<Boolean> getPlayerVisibleObservable(){ return mPlayerVisible.asObservable();}
     private BehaviorSubject<SongObject> mCurrentSong = BehaviorSubject.create();
     private BehaviorSubject<SongObject> mNextSong = BehaviorSubject.create();
     private BehaviorSubject<ShowObject> mCurrentShow = BehaviorSubject.create();
     private BehaviorSubject<NetworkException> mError = BehaviorSubject.create();
+    private BehaviorSubject<Boolean> mIsPlaying = BehaviorSubject.create(false);
+    public Observable<Integer> getSearchResultCountObservable(){return mSearchResultCount.asObservable();}
     public Observable<NetworkException> getErrorObservable(){ return mError.asObservable();}
     public Observable<String> getNextAudioLink(){ return mNextAudioLink.asObservable();}
-    public ShowObject getCurrentShow(){return mCurrentShow.getValue();}
-    private BehaviorSubject<Boolean> mIsPlaying = BehaviorSubject.create(false);
     public Observable<Boolean> getIsPlaying(){ return mIsPlaying.asObservable();}
     public Observable<SongObject> getCurrentSongObservable(){return mCurrentSong.asObservable();}
     public Observable<ShowObject> getCurrentShowObservable(){return mCurrentShow.asObservable();}
@@ -65,22 +69,32 @@ public class MainViewModel {
     public Observable<BAND> getCurrentBandObservable(){
         return mCurrentBand.asObservable();
     }
+    public ShowObject getCurrentShow(){return mCurrentShow.getValue();}
     private static Context mContext;
 
     private UUID mId = UUID.randomUUID();
 
     public MainViewModel(Context context){
         mContext =  context;
-    }
-
-    public void setup(){
         band_1 = new BandObject(STRING_CHEESE_INCIDENT, 1996, 2017, "String Cheese Incident", "StringCheeseIncident");
         band_2 = new BandObject(GRATEFUL_DEAD, 1965, 1995, "Grateful Dead", "GratefulDead");
         band_3 = new BandObject(STS9, 1999, 2017, "Sound Tribe Sector 9", "SoundTribeSector9");
         mBandsMap.put(band_1.getBandName(), band_1);
         mBandsMap.put(band_2.getBandName(), band_2);
         mBandsMap.put(band_3.getBandName(), band_3);
-        mCurrentBand.onNext(STRING_CHEESE_INCIDENT);
+    }
+
+    public void setup(){
+        setup("StringCheeseIncident");
+    }
+
+    public void setup(String band){
+        for(Map.Entry<BAND,BandObject> b : mBandsMap.entrySet()){
+            if(band.equals(b.getValue().identifier)){
+                mCurrentBand.onNext(b.getValue().getBandName());
+                return;
+            }
+        }
     }
 
     public void updateCatalog(){
@@ -108,12 +122,26 @@ public class MainViewModel {
 
     // ** AUDIO PLAYBACK ** //
 
+    public void closePlayer(){
+        mPlayerVisible.onNext(false);
+        stopAudio();
+    }
+
+    public void openPlayer(){
+        mPlayerVisible.onNext(true);
+    }
+
     public void toggleAudio(){
         mIsPlaying.onNext(!mIsPlaying.getValue());
     }
 
     public void startAudio(){
         mIsPlaying.onNext(true);
+    }
+
+    public void stopAudio() {
+        mIsPlaying.onNext(false);
+        mCurrentSong.onNext(null);
     }
 
     public void prepareNextSong(){
@@ -135,12 +163,37 @@ public class MainViewModel {
         RequestQueue queue = Volley.newRequestQueue(mContext);
         String band = mBandsMap.get(mCurrentBand.getValue()).getIdentifier();
         String location = constructShowsOfYearString(year, band);
+        Log.d("@@@", " LOC: " + location);
         StringRequest req = new StringRequest(Request.Method.GET, location,
                 response -> {
                     response = response.substring(9, response.length() - 1);
                     try {
                         ArrayList<ShowObject> showsForYear = parseShowsOfYear(response);
                         mShowObjectsForYear.onNext(showsForYear);
+                    } catch (JSONException e) {
+                        mError.onNext(new NetworkException(NetworkException.TYPE.JSON,e.getMessage()));
+                        e.printStackTrace();
+                    }
+                    //Log.d("@@@, " , " result: " + response);
+                },
+                error -> Log.d("@@@", " error response " + error));
+        queue.add(req);
+    }
+
+    public void performSearch(String term){
+        mIsSearching.onNext(true);
+        RequestQueue queue = Volley.newRequestQueue(mContext);
+        String band = mBandsMap.get(mCurrentBand.getValue()).getIdentifier();
+        String location = constructSongSearchString(band, term);
+        Log.d("@@@", " and term location: " + location);
+        StringRequest req = new StringRequest(Request.Method.GET, location,
+                response -> {
+                    response = response.substring(9, response.length() - 1);
+                    try {
+                        ArrayList<ShowObject> showsForYear = parseShowsOfYear(response);
+                        mShowObjectsForYear.onNext(showsForYear);
+                        mSearchResultCount.onNext(showsForYear.size());
+                        mIsSearching.onNext(false);
                     } catch (JSONException e) {
                         mError.onNext(new NetworkException(NetworkException.TYPE.JSON,e.getMessage()));
                         e.printStackTrace();
@@ -170,10 +223,7 @@ public class MainViewModel {
                 date = obj.getString("date");
                 if(date.length() > 15){
                     date = date.substring(0,date.length() - 10);
-                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-                    Date newDate = format.parse(date);
-                    format = new SimpleDateFormat("MM-dd-yyyy");
-                    date = format.format(newDate);
+                    date = Helper.formatDate(date);
                     if(date.substring(0,1).equals("0")){
                         date = date.substring(1,date.length());
                     }
@@ -380,6 +430,10 @@ public class MainViewModel {
         JSONObject responseJSON = new JSONObject(response);
         responseJSON = new JSONObject(String.valueOf(responseJSON.getJSONObject("response")));
         return Integer.valueOf(responseJSON.getString("numFound"));
+    }
+
+    private String constructSongSearchString(String artist, String term){
+        return "https://archive.org/advancedsearch.php?q=%28" + term + "%29+AND+collection%3A%28StringCheeseIncident%29&fl%5B%5D=collection&fl%5B%5D=coverage&fl%5B%5D=date&fl%5B%5D=description&fl%5B%5D=identifier&fl%5B%5D=venue&fl%5B%5D=name&fl%5B%5D=title&sort%5B%5D=&sort%5B%5D=&sort%5B%5D=&rows=1000&page=1&callback=callback&save=yes&output=json";
     }
 
     private String constructShowsOfYearString(int year, String artist){

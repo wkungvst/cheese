@@ -6,6 +6,7 @@ import android.graphics.drawable.AnimationDrawable;
 import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -75,7 +76,6 @@ public class SongsRecyclerAdapter extends RecyclerView.Adapter<SongsRecyclerAdap
             AnimationDrawable animation = (AnimationDrawable)holder.animation.getBackground();
             animation.start();
             holder.track.setVisibility(View.GONE);
-        //    holder.layout.setBackgroundColor(Color.parseColor("#eeeeee"));
         }
         else
         {
@@ -94,13 +94,16 @@ public class SongsRecyclerAdapter extends RecyclerView.Adapter<SongsRecyclerAdap
     }
 
     public void updateCurrentSong(MainViewModel.SongObject song){
+        Log.d("@@@", " update current song");
         for(MainViewModel.SongObject s : dataSet){
-            if(song == s){
+            if(s == song){
                 row_index = dataSet.indexOf(s);
+                notifyDataSetChanged();
+                return;
             }
         }
+        row_index = -1;
         notifyDataSetChanged();
-
     }
 
     @Override

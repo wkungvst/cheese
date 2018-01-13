@@ -4,8 +4,8 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="primary">#FFFFFF</color>
-    <color name="primary_dark">#265ea5</color>
+    <color name="primary_dark">#4e6182</color>
     <color name="primary_accent">#EFDFC2</color>
-    <color name="secondary">#C1666B</color>
-    <color name="secondary_dark">#506C64</color>
+    <color name="secondary">#EDD637</color>
+    <color name="player">@color/primary_dark</color>
 </resources>
