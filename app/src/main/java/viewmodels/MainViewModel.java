@@ -1,11 +1,16 @@
 package viewmodels;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,6 +31,8 @@ import exceptions.NetworkException;
 import helpers.Helper;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
+
+import static android.content.Context.MODE_PRIVATE;
 import static viewmodels.MainViewModel.BAND.GRATEFUL_DEAD;
 import static viewmodels.MainViewModel.BAND.STRING_CHEESE_INCIDENT;
 import static viewmodels.MainViewModel.BAND.STS9;
@@ -36,11 +43,17 @@ import static viewmodels.MainViewModel.BAND.STS9;
 
 public class MainViewModel {
 
-    BandObject band_1, band_2, band_3;
+    BandObject band_1, band_2, band_3, band_4, band_5, band_6;
     private HashMap<BAND, BandObject> mBandsMap = new HashMap<>();
     private BehaviorSubject<BAND> mCurrentBand = BehaviorSubject.create();
     private BehaviorSubject<AbstractMap.SimpleEntry<Integer,ShowObject>> mMetaData = BehaviorSubject.create();
     private BehaviorSubject<TreeMap<Integer,Integer>> mYearData = BehaviorSubject.create(new TreeMap());
+    private BehaviorSubject<Boolean> mIsPlayingFavorite = BehaviorSubject.create();
+    public Observable<Boolean> getIsPlayingFavorite(){return mIsPlayingFavorite.asObservable();}
+    private BehaviorSubject<ArrayList<SongObject>> mFavorites = BehaviorSubject.create();
+    public Observable<ArrayList<SongObject>> getFavoritesObservable(){return mFavorites.asObservable();}
+    private BehaviorSubject<Boolean> mCurrentSongFavorite = BehaviorSubject.create();
+    public Observable<Boolean> getCurrentSongFavoriteObservable(){return mCurrentSongFavorite.asObservable();}
     private BehaviorSubject<ArrayList<ShowObject>> mShowObjectsForYear = BehaviorSubject.create();
     private BehaviorSubject<Integer> mSearchResultCount = BehaviorSubject.create();
     private BehaviorSubject<ArrayList<SongObject>> mSongs = BehaviorSubject.create();
@@ -103,6 +116,7 @@ public class MainViewModel {
             Log.d("@@@", " MainViewModel updateCatalog: band object is null");
             return;
         }
+        getFavorites();
         getMetaDataForBand(mContext, mCurrentBand.getValue());
         getYearDataForBand(mContext, mCurrentBand.getValue(), current.getStartYear(), current.getEndYear());
     }
@@ -118,7 +132,50 @@ public class MainViewModel {
         return mId;
     }
 
+    public void getFavorites(){
+        SharedPreferences prefs = ((Activity)mContext).getPreferences(MODE_PRIVATE);
+        Gson gson = new Gson();
+        String favs = prefs.getString("FAV_LIST", "");
+        ArrayList<SongObject> favList = gson.fromJson(favs, new TypeToken<ArrayList<SongObject>>(){}.getType());
+        if(favList != null && favList.size() > 0){
+           mFavorites.onNext(favList);
+        }
+    }
 
+    public void addToFavorites(){
+        if(mCurrentSong.getValue() != null){
+            SharedPreferences prefs = ((Activity)mContext).getPreferences(MODE_PRIVATE);
+            Gson gson = new Gson();
+            String favs = prefs.getString("FAV_LIST", "");
+            ArrayList<SongObject> favList = gson.fromJson(favs, new TypeToken<ArrayList<SongObject>>(){}.getType());
+            if(favList == null || favList.size() == 0){
+                Log.d("main view model", " no favorites!");
+                favList = new ArrayList<>();
+            }
+            if(favList.contains(mCurrentSong.getValue())){return;}
+            favList.add(mCurrentSong.getValue());
+            SharedPreferences.Editor prefsEditor = prefs.edit();
+            String json = gson.toJson(favList);
+            prefsEditor.putString("FAV_LIST", json);
+            prefsEditor.commit();
+        }
+    }
+
+    private boolean checkIfFavorite(SongObject song){
+        SharedPreferences prefs = ((Activity)mContext).getPreferences(MODE_PRIVATE);
+        Gson gson = new Gson();
+        String favs = prefs.getString("FAV_LIST", "");
+        ArrayList<SongObject> favList = gson.fromJson(favs, new TypeToken<ArrayList<SongObject>>(){}.getType());
+        if(favList == null || favList.size() == 0){
+            return false;
+        }
+        for(SongObject s : favList){
+            if(song.name.equals(s.name)){
+                return true;
+            }
+        }
+        return false;
+    }
 
     // ** AUDIO PLAYBACK ** //
 
@@ -153,7 +210,7 @@ public class MainViewModel {
                     SongObject nextSong = i.next();
                     Log.d("@@@", " reset next audio link! " + nextSong.title);
                     String nextLink = "https://www.archive.org/download/" + nextSong.rootname + "/" + nextSong.name;
-                    openSong(nextSong,null);
+                    openSong(nextSong,null, false);
                 }
             }
         }
@@ -318,10 +375,16 @@ public class MainViewModel {
         }
     }
 
-    public void openSong(SongObject song, SongObject nextSong){
+    public void openSong(SongObject song, SongObject nextSong, boolean isFavorites){
 //        Log.d("@@@, ", " open this song: " + song.title + " next song: " + nextSong.title);
         if(song == mCurrentSong.getValue()) return;
+        if(isFavorites){
+            mIsPlayingFavorite.onNext(true);
+        }else{
+            mIsPlayingFavorite.onNext(true);
+        }
         mCurrentSong.onNext(song);
+        mCurrentSongFavorite.onNext(checkIfFavorite(song));
         String link = "https://www.archive.org/download/" + song.rootname + "/" + song.name;
         if(nextSong != null){
             String nextLink = "https://www.archive.org/download/" + nextSong.rootname + "/" + nextSong.name;

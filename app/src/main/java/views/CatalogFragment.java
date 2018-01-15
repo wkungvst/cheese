@@ -99,7 +99,7 @@ public class CatalogFragment extends Fragment implements ICatalogInterface, ISho
 
     @Override
     public void openSong(MainViewModel.SongObject song, MainViewModel.SongObject nextSong) {
-        mMainViewModel.openSong(song, nextSong);
+        mMainViewModel.openSong(song, nextSong, false);
     }
 
     public interface ICatalogListener{
