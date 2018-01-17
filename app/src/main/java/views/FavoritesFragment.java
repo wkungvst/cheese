@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 
 import adapters.FavoritesRecyclerAdapter;
 import adapters.SongsRecyclerAdapter;
+import interfaces.IFavoriteSongClick;
 import interfaces.ISongClick;
 import kung.cheeseandfriends.R;
 import viewmodels.MainViewModel;
@@ -23,7 +25,7 @@ import viewmodels.MainViewModel;
  * Created by wkung on 12/12/17.
  */
 
-public class FavoritesFragment extends Fragment implements ISongClick{
+public class FavoritesFragment extends Fragment implements IFavoriteSongClick {
 
     View mView;
     MainViewModel mMainViewModel;
@@ -47,6 +49,7 @@ public class FavoritesFragment extends Fragment implements ISongClick{
 
     private void addSubscriptions(){
         mMainViewModel.getFavoritesObservable().subscribe(list->{
+            Log.d("@@@, ", " list size: " + list.size());
             populateFavorites(list);
         });
     }
@@ -65,5 +68,10 @@ public class FavoritesFragment extends Fragment implements ISongClick{
     @Override
     public void openSong(MainViewModel.SongObject song, MainViewModel.SongObject nextSong) {
         mMainViewModel.openSong(song, nextSong, true);
+    }
+
+    @Override
+    public void deleteFavorite(MainViewModel.SongObject song) {
+        mMainViewModel.deleteFavorite(song);
     }
 }

@@ -164,6 +164,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         }));
 
         mCompositeSubscription.add(mMainViewModel.getCurrentSongFavoriteObservable().subscribe(favorite->{
+            Log.d("@@@, ", " current song favorite observable updated! favorite? " + favorite);
             if(favorite){
                 ((ImageButton)findViewById(R.id.player_favorite)).setImageResource(R.drawable.favorite);
             }else{
@@ -251,7 +252,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         RxView.clicks(findViewById(R.id.player_favorite)).subscribe(click->{
             mMainViewModel.addToFavorites();
-            ((ImageButton)findViewById(R.id.player_favorite)).setImageResource(R.drawable.favorite);
         });
 
         RxView.clicks(findViewById(R.id.search_result_container)).subscribe(click->{
@@ -279,7 +279,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     }
 
     private void showSearchButton(boolean show){
-        Log.d("@@@", " show search button");
         findViewById(R.id.search_button).setVisibility(show ? View.VISIBLE : View.GONE);
         findViewById(R.id.search_result_container).setVisibility(show ? View.GONE : View.VISIBLE);
     }
@@ -342,7 +341,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         String date = show.date;
         String location = show.location;
         String venue = show.venue;
-        Log.d("@@@", " date: " + date);
         ((TextView)findViewById(R.id.show_location)).setText(show.location);
         ((TextView)findViewById(R.id.show_title)).setText(show.title);
         ((TextView)findViewById(R.id.show_date)).setText(show.date);
@@ -352,7 +350,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private void populateMetaData(AbstractMap.SimpleEntry<Integer, MainViewModel.ShowObject> data){
         mBandName = mMainViewModel.getBandObject(mCurrentBand).getCanonical();
         mLatestShowObject = data.getValue();
-        Log.d("@@@, ", " title iss: " +mLatestShowObject.title + ".");
         ((TextView)findViewById(R.id.total_shows)).setText("SHOWS: " + data.getKey());
         ((TextView)findViewById(R.id.band_name)).setText("" +mBandName);
         ((TextView)findViewById(R.id.show_title)).setText("" + mLatestShowObject.title);

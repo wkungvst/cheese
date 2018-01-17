@@ -15,7 +15,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import interfaces.ISongClick;
+import interfaces.IFavoriteSongClick;
 import kung.cheeseandfriends.R;
 import viewmodels.MainViewModel;
 
@@ -27,10 +27,10 @@ public class FavoritesRecyclerAdapter extends RecyclerView.Adapter<FavoritesRecy
 
 private ArrayList<MainViewModel.SongObject> dataSet;
         Activity context;
-        ISongClick clicker;
+        IFavoriteSongClick clicker;
         int row_index = -1;
 
-public FavoritesRecyclerAdapter(ArrayList<MainViewModel.SongObject> data, ISongClick click ){
+public FavoritesRecyclerAdapter(ArrayList<MainViewModel.SongObject> data, IFavoriteSongClick click ){
         clicker = click;
         dataSet = data;
         }
@@ -84,6 +84,12 @@ public static class ViewHolder extends RecyclerView.ViewHolder {
             holder.animation.setVisibility(View.GONE);
             //    holder.layout.setBackgroundColor(Color.parseColor("#ffffff"));
         }
+
+        holder.delete.setOnClickListener(click->{
+            Log.d("@@@"," delete this song: " + dataSet.get(position).title);
+            clicker.deleteFavorite(dataSet.get(position));
+        });
+
         holder.layout.setOnClickListener(view -> {
             row_index = position;
             notifyDataSetChanged();

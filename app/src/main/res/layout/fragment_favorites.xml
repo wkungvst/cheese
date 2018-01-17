@@ -27,7 +27,6 @@
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/favorite_songs_recyclerview"
-            android:scrollbars="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 

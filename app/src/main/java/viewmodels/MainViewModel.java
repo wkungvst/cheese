@@ -137,28 +137,59 @@ public class MainViewModel {
         Gson gson = new Gson();
         String favs = prefs.getString("FAV_LIST", "");
         ArrayList<SongObject> favList = gson.fromJson(favs, new TypeToken<ArrayList<SongObject>>(){}.getType());
-        if(favList != null && favList.size() > 0){
+        if(favList != null){
            mFavorites.onNext(favList);
         }
     }
 
     public void addToFavorites(){
+        mCurrentSongFavorite.onNext(true);
         if(mCurrentSong.getValue() != null){
+            // if it's a favorite, remove from favorites
+            if(checkIfFavorite(mCurrentSong.getValue())){
+                deleteFavorite(mCurrentSong.getValue());
+                mCurrentSongFavorite.onNext(false);
+                return;
+            }
+            if(checkIfFavorite(mCurrentSong.getValue())){
+                return;
+            }
             SharedPreferences prefs = ((Activity)mContext).getPreferences(MODE_PRIVATE);
             Gson gson = new Gson();
             String favs = prefs.getString("FAV_LIST", "");
             ArrayList<SongObject> favList = gson.fromJson(favs, new TypeToken<ArrayList<SongObject>>(){}.getType());
-            if(favList == null || favList.size() == 0){
-                Log.d("main view model", " no favorites!");
+            if(favList == null){
                 favList = new ArrayList<>();
             }
-            if(favList.contains(mCurrentSong.getValue())){return;}
             favList.add(mCurrentSong.getValue());
             SharedPreferences.Editor prefsEditor = prefs.edit();
             String json = gson.toJson(favList);
             prefsEditor.putString("FAV_LIST", json);
             prefsEditor.commit();
         }
+        getFavorites();
+    }
+
+    public void deleteFavorite(SongObject song){
+        SharedPreferences prefs = ((Activity)mContext).getPreferences(MODE_PRIVATE);
+        Gson gson = new Gson();
+        String favs = prefs.getString("FAV_LIST", "");
+        ArrayList<SongObject> favList = gson.fromJson(favs, new TypeToken<ArrayList<SongObject>>(){}.getType());
+        if(favList == null || favList.size() == 0){
+            return;
+        }
+        SongObject songToRemove = song;
+        for(SongObject s : favList){
+            if(song.name.equals(s.name)){
+                songToRemove = s;
+            }
+        }
+        favList.remove(songToRemove);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+        String json = gson.toJson(favList);
+        prefsEditor.putString("FAV_LIST", json);
+        prefsEditor.commit();
+        getFavorites();
     }
 
     private boolean checkIfFavorite(SongObject song){
@@ -175,6 +206,10 @@ public class MainViewModel {
             }
         }
         return false;
+    }
+
+    private void refreshFavorites(){
+
     }
 
     // ** AUDIO PLAYBACK ** //
