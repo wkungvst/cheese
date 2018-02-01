@@ -131,7 +131,6 @@
             android:textColor="#888888"
             android:layout_marginBottom="30dp"/>
 
-
     </RelativeLayout>
 
     <RelativeLayout
@@ -148,7 +147,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </RelativeLayout>
-
 
     <include layout="@layout/bands_popup" ></include>
 

@@ -210,9 +210,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         mCompositeSubscription.add(mMainViewModel.getIsSearchingObservable().subscribe(searching->{
             if(searching){
-            //    findViewById(R.id.search_progress).setVisibility(View.VISIBLE);
+                findViewById(R.id.search_progress).setVisibility(View.VISIBLE);
+                findViewById(R.id.search_button).setVisibility(View.GONE);
             }else{
-             //    findViewById(R.id.search_progress).setVisibility(View.GONE);
+                 findViewById(R.id.search_progress).setVisibility(View.GONE);
             }
         }));
 
