@@ -68,6 +68,8 @@ public class MainViewModel {
     private BehaviorSubject<ShowObject> mCurrentShow = BehaviorSubject.create();
     private BehaviorSubject<NetworkException> mError = BehaviorSubject.create();
     private BehaviorSubject<Boolean> mIsPlaying = BehaviorSubject.create(false);
+    private BehaviorSubject<Boolean> mSearchModeOn = BehaviorSubject.create(false);
+    public Observable<Boolean> getSearchModeOnObservable(){return mSearchModeOn.asObservable();}
     public Observable<Integer> getSearchResultCountObservable(){return mSearchResultCount.asObservable();}
     public Observable<NetworkException> getErrorObservable(){ return mError.asObservable();}
     public Observable<String> getNextAudioLink(){ return mNextAudioLink.asObservable();}
@@ -238,6 +240,9 @@ public class MainViewModel {
 
     public void prepareNextSong(){
         SongObject song = mCurrentSong.getValue();
+        if(song == null){
+            Log.d("@@@", " songs are null can't prepare next");
+        }
         Iterator<SongObject> i = mSongs.getValue().iterator();
         while(i.hasNext()){
             if(song == i.next()){
@@ -296,6 +301,9 @@ public class MainViewModel {
         queue.add(req);
     }
 
+    public void setSearchModeOn(Boolean on){
+        mSearchModeOn.onNext(on);
+    }
     private ArrayList<ShowObject> parseShowsOfYear(String response) throws JSONException{
         ArrayList<ShowObject> list = new ArrayList<>();
         JSONObject responseJSON = new JSONObject(response);
@@ -411,12 +419,11 @@ public class MainViewModel {
     }
 
     public void openSong(SongObject song, SongObject nextSong, boolean isFavorites){
-//        Log.d("@@@, ", " open this song: " + song.title + " next song: " + nextSong.title);
         if(song == mCurrentSong.getValue()) return;
         if(isFavorites){
             mIsPlayingFavorite.onNext(true);
         }else{
-            mIsPlayingFavorite.onNext(true);
+            mIsPlayingFavorite.onNext(false);
         }
         mCurrentSong.onNext(song);
         mCurrentSongFavorite.onNext(checkIfFavorite(song));
@@ -622,9 +629,11 @@ public class MainViewModel {
     class DateComparator implements Comparator<ShowObject>{
         @Override
         public int compare(ShowObject show1, ShowObject show2) {
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+
+            DateFormat df = new SimpleDateFormat("MM-dd-yyyy");
+
             try {
-                if(df.parse(show1.date).after(df.parse(show2.date))){
+               if(df.parse(show1.date).after(df.parse(show2.date))){
                     return 1;
                 }
                 return -1;

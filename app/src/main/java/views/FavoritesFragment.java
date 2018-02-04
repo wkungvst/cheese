@@ -15,7 +15,6 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import adapters.FavoritesRecyclerAdapter;
-import adapters.SongsRecyclerAdapter;
 import interfaces.IFavoriteSongClick;
 import interfaces.ISongClick;
 import kung.cheeseandfriends.R;

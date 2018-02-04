@@ -160,6 +160,9 @@ public class CatalogFragment extends Fragment implements ICatalogInterface, ISho
         });
 
         mMainViewModel.getCurrentSongObservable().subscribe(song->{
+            if(mSongsRecyclerAdapter == null){
+                return;
+            }
             mSongsRecyclerAdapter.updateCurrentSong(song);
         });
     }

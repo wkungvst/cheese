@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -32,6 +33,7 @@ import com.jakewharton.rxbinding.view.RxView;
 
 import java.io.IOException;
 import java.util.AbstractMap;
+import java.util.Timer;
 import java.util.TreeMap;
 
 import interfaces.ICatalogInterface;
@@ -47,6 +49,7 @@ import kung.cheeseandfriends.R;
 
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener, CatalogFragment.ICatalogListener, IPager {
 
+    private static final int TIMEOUT_MS = 10000;
     private CompositeSubscription mCompositeSubscription;
     private MainViewModel mMainViewModel;
     private MainPagerAdapter mMainPagerAdapter;
@@ -61,6 +64,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private EditText mSearchEdit;
     private Boolean mSongHasPlayed = false;
     private FloatingActionButton mBandsButton;
+    private CountDownTimer mCountDownTimer;
 
 
     private static String[] TABS = {"Jam Of The Day", "Catalog"};
@@ -69,6 +73,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        startTimeoutCounter();
 
         mMainViewModel = new MainViewModel(this);
         mMainPagerAdapter = new MainPagerAdapter(this, getSupportFragmentManager());
@@ -112,6 +117,28 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         addSubscriptions();
     }
 
+    private void startTimeoutCounter(){
+        mCountDownTimer = new CountDownTimer(TIMEOUT_MS, 1000) {
+
+            public void onTick(long millisUntilFinished) {}
+
+            public void onFinish() {
+                showTimeoutError();
+                Log.d("@#@@,  ", " NETWORK TIMER@!!");
+            }
+        }.start();
+    }
+
+    private void showTimeoutError(){
+        clearTimeoutCount();
+        Log.d("@@@", "show timeout error cancelled");
+    }
+
+    private void clearTimeoutCount(){
+        Log.d("@@@", " cleartimeout count");
+        mCountDownTimer.cancel();
+    }
+
     private void initialize(){
         mSearchEdit.setHint(Html.fromHtml("<b>search </b>song names <b>&#9834; &#9835; </b>"));
     }
@@ -153,7 +180,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         mCompositeSubscription.add(mMainViewModel.getAudioLinkObservable().subscribe(audio->{
             Log.d("@@@", " get audio link observable. play audio");
             playAudio(audio);
-            populateNowPlaying(mMainViewModel.getCurrentShow());
+            if(mMainViewModel.getCurrentShow() != null){
+                populateNowPlaying(mMainViewModel.getCurrentShow());
+            }
         }));
 
         mCompositeSubscription.add(mMainViewModel.getCurrentSongObservable().subscribe(songObject->{
@@ -174,7 +203,11 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         mCompositeSubscription.add(mMainViewModel.getIsPlayingFavorite().subscribe(isFavorite->{
             if(isFavorite){
+                ((TextView)findViewById(R.id.latest_show_tag)).setText("PLAYING FROM FAVORITES");
                 findViewById(R.id.show_widget).setVisibility(View.GONE);
+            }else{
+                ((TextView)findViewById(R.id.latest_show_tag)).setText("LATEST SHOW");
+                findViewById(R.id.show_widget).setVisibility(View.VISIBLE);
             }
         }));
 
@@ -199,6 +232,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                 if(metaData != null && yearData.size() > 0){
                     findViewById(R.id.splash).setVisibility(View.GONE);
                     findViewById(R.id.bands_button).setVisibility(View.VISIBLE);
+                    clearTimeoutCount();
                 }
                 return false;
             }
@@ -225,6 +259,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         mCompositeSubscription.add(mMainViewModel.getSearchResultCountObservable().subscribe(count->{
             if(count > 0){
                 showSearchResultCount(count);
+                mMainViewModel.setSearchModeOn(true);
             }else{
                 // TODO: show no results screen
             }
@@ -233,6 +268,14 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         mCompositeSubscription.add(mMainViewModel.getPlayerVisibleObservable().subscribe(visible->{
             Log.d("@@@, ", " should be visible? " + visible);
             findViewById(R.id.player).setVisibility(visible? View.VISIBLE : View.GONE);
+        }));
+
+        mCompositeSubscription.add(mMainViewModel.getSearchModeOnObservable().subscribe(searchOn->{
+            if(searchOn){
+                mTabLayout.getTabAt(0).setText("SEARCH RESULTS");
+            }else{
+                mTabLayout.getTabAt(0).setText("CATALOG");
+            }
         }));
 
         findViewById(R.id.player_close).setOnClickListener(click->{
@@ -257,6 +300,12 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         RxView.clicks(findViewById(R.id.search_result_container)).subscribe(click->{
             showSearchButton(true);
+            clearSearch();
+            mMainViewModel.setSearchModeOn(false);
+        });
+
+        RxView.clicks(findViewById(R.id.search_button)).subscribe(click->{
+            performSearch();
         });
 
         ((EditText)findViewById(R.id.search_edittext)).setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -452,6 +501,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         if(mCatalogInterface != null){
             mCatalogInterface.onBackPressed();
         }
+        mMainViewModel.setSearchModeOn(false);
     }
 
     @Override

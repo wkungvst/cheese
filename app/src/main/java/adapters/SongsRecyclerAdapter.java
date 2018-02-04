@@ -94,7 +94,10 @@ public class SongsRecyclerAdapter extends RecyclerView.Adapter<SongsRecyclerAdap
     }
 
     public void updateCurrentSong(MainViewModel.SongObject song){
-        Log.d("@@@", " update current song");
+
+        Log.d("@@@", " sra update current song");
+        if(song == null) return;
+        Log.d("@@@", " sra update current song");
         for(MainViewModel.SongObject s : dataSet){
             if(s == song){
                 row_index = dataSet.indexOf(s);
