@@ -206,7 +206,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                 ((TextView)findViewById(R.id.latest_show_tag)).setText("PLAYING FROM FAVORITES");
                 findViewById(R.id.show_widget).setVisibility(View.GONE);
             }else{
-                ((TextView)findViewById(R.id.latest_show_tag)).setText("LATEST SHOW");
+                ((TextView)findViewById(R.id.latest_show_tag)).setText("NOW PLAYING");
                 findViewById(R.id.show_widget).setVisibility(View.VISIBLE);
             }
         }));
@@ -386,13 +386,12 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
     private void populateNowPlaying(MainViewModel.ShowObject show){
         findViewById(R.id.total_shows).setVisibility(View.GONE);
-        ((TextView)findViewById(R.id.latest_show_tag)).setText("NOW PLAYING");
         String title = show.title;
         String date = show.date;
         String location = show.location;
         String venue = show.venue;
         ((TextView)findViewById(R.id.show_location)).setText(show.location);
-        ((TextView)findViewById(R.id.show_title)).setText(show.title);
+        ((TextView)findViewById(R.id.show_title)).setText(show.title.substring(1, show.title.length()));
         ((TextView)findViewById(R.id.show_date)).setText(show.date);
         ((TextView)findViewById(R.id.show_venue)).setText(show.venue + ", ");
     }

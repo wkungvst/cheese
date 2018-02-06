@@ -35,7 +35,6 @@ public class FavoritesFragment extends Fragment implements IFavoriteSongClick {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         mView = inflater.inflate(R.layout.fragment_favorites, container, false);
-        ((TextView)mView.findViewById(R.id.no_favorites_text)).setText(Html.fromHtml("Click the &#10084; icon to add songs to this list!"));
         addSubscriptions();
 
         return mView;
