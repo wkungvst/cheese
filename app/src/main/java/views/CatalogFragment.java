@@ -46,7 +46,6 @@ public class CatalogFragment extends Fragment implements ICatalogInterface, ISho
     private RelativeLayout mSecondaryContainer;
     private RelativeLayout mSongsContainer;
     private MainViewModel mMainViewModel;
-    private FloatingActionButton mBackButton;
     private CompositeSubscription mCompositeSubscription;
     private int mSecondaryYear;
     private SongsRecyclerAdapter mSongsRecyclerAdapter;
@@ -80,20 +79,22 @@ public class CatalogFragment extends Fragment implements ICatalogInterface, ISho
     }
 
     private void swapViews(){
+        //Log.d("@@@", " songs conatiner null? return? " + (mSongsContainer == null));
+        if(mSongsContainer == null)return;
         if(mSongsContainer.getVisibility() == View.VISIBLE){
+            Log.d("@@@", "swap 1");
             mSongsContainer.setVisibility(View.GONE);
             mSecondaryContainer.setVisibility(View.VISIBLE);
         }else if(mSecondaryContainer.getVisibility() == View.VISIBLE){
+            Log.d("@@@", "swap 2");
             mSecondaryContainer.setVisibility(View.GONE);
             mPrimaryContainer.setVisibility(View.VISIBLE);
-            mBackButton.setVisibility(View.GONE);
         }
     }
 
     @Override
     public void openShow(MainViewModel.ShowObject show) {
         mMainViewModel.openShow(show);
-        mBackButton.setVisibility(View.VISIBLE);
         Log.d("@@@", " catalog fragment open show date : " + show.date);
     }
 
@@ -121,11 +122,6 @@ public class CatalogFragment extends Fragment implements ICatalogInterface, ISho
         mPrimaryContainer = mView.findViewById(R.id.catalog_primary_container);
         mSecondaryContainer = mView.findViewById(R.id.catalog_secondary_container);
         mSongsContainer = mView.findViewById(R.id.catalog_songs_container);
-        mBackButton = mView.findViewById(R.id.back_button);
-
-        RxView.clicks(mBackButton).subscribe(back->{
-            onBackPressed();
-        });
         return mView;
     }
 
@@ -195,7 +191,6 @@ public class CatalogFragment extends Fragment implements ICatalogInterface, ISho
         mPrimaryContainer.setVisibility(View.GONE);
         mSongsContainer.setVisibility(View.GONE);
         mSecondaryContainer.setVisibility(View.VISIBLE);
-        mBackButton.setVisibility(View.VISIBLE);
         mArrayAdapter.notifyDataSetChanged();
     }
 

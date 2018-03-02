@@ -27,7 +27,6 @@
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/catalog_secondary_recyclerview"
-            android:scrollbars="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 
@@ -41,21 +40,8 @@
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/catalog_songs_recyclerview"
-            android:scrollbars="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
     </RelativeLayout>
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/back_button"
-        android:visibility="gone"
-        android:src="@drawable/back"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_margin="20dp"
-        app:fabSize="normal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
 </RelativeLayout>

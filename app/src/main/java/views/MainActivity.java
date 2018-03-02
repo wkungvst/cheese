@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -65,7 +66,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private Boolean mSongHasPlayed = false;
     private FloatingActionButton mBandsButton;
     private CountDownTimer mCountDownTimer;
-
+    private Snackbar mSnackbar;
 
     private static String[] TABS = {"Jam Of The Day", "Catalog"};
 
@@ -131,12 +132,19 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
     private void showTimeoutError(){
         clearTimeoutCount();
-        Log.d("@@@", "show timeout error cancelled");
+        mSnackbar = Snackbar
+                .make(findViewById(R.id.parent), "No Network Connection.", Snackbar.LENGTH_INDEFINITE);
+        mSnackbar.setAction("TRY AGAIN", view -> {
+            Intent i = new Intent(MainActivity.this, MainActivity.class);
+            startActivity(i);
+        });
+        mSnackbar.setActionTextColor(Color.parseColor("#4e6182"));
+        mSnackbar.show();
     }
 
     private void clearTimeoutCount(){
-        Log.d("@@@", " cleartimeout count");
         mCountDownTimer.cancel();
+        if(mSnackbar != null){ mSnackbar.dismiss();}
     }
 
     private void initialize(){
@@ -145,6 +153,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
     private void addSubscriptions(){
         mCompositeSubscription = new CompositeSubscription();
+
+        RxView.clicks(findViewById(R.id.show_widget)).subscribe(c->{
+            mMainViewModel.openLatestShow();
+        });
 
         mCompositeSubscription.add(mMainViewModel.getMetaDataObservable().subscribe(data->{
             Log.d("@@@", " from activity number of shows: " + data.getKey());
@@ -261,6 +273,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                 showSearchResultCount(count);
                 mMainViewModel.setSearchModeOn(true);
             }else{
+                showSearchResultCount(0);
                 // TODO: show no results screen
             }
         }));
@@ -273,6 +286,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         mCompositeSubscription.add(mMainViewModel.getSearchModeOnObservable().subscribe(searchOn->{
             if(searchOn){
                 mTabLayout.getTabAt(0).setText("SEARCH RESULTS");
+                TabLayout.Tab tab = mTabLayout.getTabAt(0);
+                if (tab != null){
+                    tab.select();
+                }
             }else{
                 mTabLayout.getTabAt(0).setText("CATALOG");
             }
@@ -336,7 +353,15 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private void showSearchResultCount(int count){
         findViewById(R.id.search_button).setVisibility(View.GONE);
         findViewById(R.id.search_result_container).setVisibility(View.VISIBLE);
-        ((TextView)findViewById(R.id.search_result_count)).setText(count + " RESULTS");
+        if(count == 0){
+            //clearSearch();
+            ((TextView)findViewById(R.id.search_result_count)).setText("NO SEARCH RESULTS.");
+        }else if (count == 1){
+            ((TextView)findViewById(R.id.search_result_count)).setText(count + " RESULT");
+        }else{
+            ((TextView)findViewById(R.id.search_result_count)).setText(count + " RESULTS");
+        }
+
     }
 
     private void performSearch(){
@@ -380,8 +405,13 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     }
 
     private void openBandsPopup() {
-        openNewBand("SoundTribeSector9");
-        findViewById(R.id.bands_popup).setVisibility(View.VISIBLE);
+        if(mCurrentBand == MainViewModel.BAND.STRING_CHEESE_INCIDENT){
+            openNewBand("GratefulDead");
+        }else{
+            openNewBand("StringCheeseIncident");
+        }
+
+    //    findViewById(R.id.bands_popup).setVisibility(View.VISIBLE);
     }
 
     private void populateNowPlaying(MainViewModel.ShowObject show){

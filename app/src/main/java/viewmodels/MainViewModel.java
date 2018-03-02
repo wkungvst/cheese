@@ -112,6 +112,14 @@ public class MainViewModel {
         }
     }
 
+    public void openLatestShow(){
+        if(mMetaData.getValue().getValue() != null){
+            openShow(mMetaData.getValue().getValue());
+        }else{
+            Log.d("@@@@", " current show is null");
+        }
+    }
+
     public void updateCatalog(){
         BandObject current = mBandsMap.get(mCurrentBand.getValue());
         if(current == null){
@@ -163,6 +171,7 @@ public class MainViewModel {
             if(favList == null){
                 favList = new ArrayList<>();
             }
+            mCurrentSong.getValue().setShow(mCurrentShow.getValue());
             favList.add(mCurrentSong.getValue());
             SharedPreferences.Editor prefsEditor = prefs.edit();
             String json = gson.toJson(favList);
@@ -587,6 +596,11 @@ public class MainViewModel {
         public String title;
         public String length;
         public int track;
+        public ShowObject show;
+
+        public void setShow(ShowObject show){
+            this.show = show;
+        }
 
         public SongObject(String rootname, String name, String title, String length, int track){
             this.rootname = rootname;

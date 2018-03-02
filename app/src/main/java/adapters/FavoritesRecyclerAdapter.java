@@ -40,7 +40,8 @@ public static class ViewHolder extends RecyclerView.ViewHolder {
     private TextView title;
     private ImageButton delete;
     private TextView album;
-    private TextView length;
+    private TextView date;
+    private TextView location;
     private View layout;
     private ImageView animation;
 
@@ -50,7 +51,8 @@ public static class ViewHolder extends RecyclerView.ViewHolder {
         title = v.findViewById(R.id.song_title);
         delete = v.findViewById(R.id.delete_favorite);
         album = v.findViewById(R.id.song_album);
-        length = v.findViewById(R.id.song_length);
+        date = v.findViewById(R.id.show_date);
+        location = v.findViewById(R.id.show_location);
         animation = v.findViewById(R.id.play_animation);
     }
 }
@@ -70,7 +72,8 @@ public static class ViewHolder extends RecyclerView.ViewHolder {
     @Override
     public void onBindViewHolder(FavoritesRecyclerAdapter.ViewHolder holder, int position) {
         holder.title.setText(Html.fromHtml(dataSet.get(position).title));
-        holder.length.setText(dataSet.get(position).length);
+        holder.date.setText(dataSet.get(position).show.date);
+        holder.location.setText(dataSet.get(position).show.location);
         if(row_index == position){
             holder.animation.setVisibility(View.VISIBLE);
             holder.animation.setBackgroundResource(R.drawable.playing_animation);
