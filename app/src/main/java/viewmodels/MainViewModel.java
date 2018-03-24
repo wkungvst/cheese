@@ -112,8 +112,10 @@ public class MainViewModel {
         }
     }
 
-    public void openLatestShow(){
-        if(mMetaData.getValue().getValue() != null){
+    public void openCurrentShow(){
+        if(mCurrentShow.getValue() != null){
+            openShow(mCurrentShow.getValue());
+        }else if(mMetaData.getValue().getValue() != null){
             openShow(mMetaData.getValue().getValue());
         }else{
             Log.d("@@@@", " current show is null");
@@ -492,6 +494,8 @@ public class MainViewModel {
 
     private ArrayList<SongObject> parseSongsForShow(String root, String response) throws JSONException {
         ArrayList<SongObject> results = new ArrayList<>();
+      //  Log.d("@@@", "partse songs for show. " + response);
+        response = response.replaceAll("â€™","'");
         JSONObject json = XML.toJSONObject(response);
         json = json.getJSONObject("files");
         JSONArray array = json.getJSONArray("file");
@@ -503,7 +507,9 @@ public class MainViewModel {
             if(array.getString(i).contains(".mp3")){
                 try{
                     name = song.getString("name");
-                    title = song.getString("title");
+                    title =  new String(song.getString("title").getBytes("ISO-8859-1"), "UTF-8");
+                   // title = title.replaceAll("â€™","'");
+                    Log.d("WWW@", " title is " + title);
                     length = song.getString("length");
                     track = Integer.parseInt(song.getString("track"));
                     SongObject songObject = new SongObject(root, name, title, length, track);

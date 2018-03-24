@@ -155,7 +155,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         mCompositeSubscription = new CompositeSubscription();
 
         RxView.clicks(findViewById(R.id.show_widget)).subscribe(c->{
-            mMainViewModel.openLatestShow();
+            mMainViewModel.openCurrentShow();
         });
 
         mCompositeSubscription.add(mMainViewModel.getMetaDataObservable().subscribe(data->{
@@ -421,7 +421,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         String location = show.location;
         String venue = show.venue;
         ((TextView)findViewById(R.id.show_location)).setText(show.location);
-        ((TextView)findViewById(R.id.show_title)).setText(show.title.substring(1, show.title.length()));
+        ((TextView)findViewById(R.id.show_title)).setText(show.title.trim());
         ((TextView)findViewById(R.id.show_date)).setText(show.date);
         ((TextView)findViewById(R.id.show_venue)).setText(show.venue + ", ");
     }

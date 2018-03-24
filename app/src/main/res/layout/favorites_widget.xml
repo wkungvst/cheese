@@ -11,9 +11,9 @@
         android:layout_height="59dp"
         android:paddingRight="8dp"
         android:paddingTop="8dp"
-        android:paddingBottom="8dp">
+        android:paddingBottom="7dp">
 
-    <ImageView
+        <ImageView
         android:id="@+id/play_animation"
         android:layout_width="16dp"
         android:padding="5dp"
@@ -24,20 +24,20 @@
         android:layout_centerVertical="true"/>
 
         <ImageButton
-            android:id="@+id/delete_favorite"
-            android:layout_toRightOf="@+id/play_animation"
-            android:gravity="center"
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:background="@null"
-            android:src="@drawable/close_light"/>
+        android:id="@+id/delete_favorite"
+        android:layout_toRightOf="@+id/play_animation"
+        android:gravity="center"
+        android:layout_width="40dp"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:background="@null"
+        android:src="@drawable/close_light"/>
 
-    <TextView
+        <TextView
         android:id="@+id/song_title"
         android:layout_toRightOf="@+id/delete_favorite"
-        android:layout_toLeftOf="@+id/song_length"
+        android:layout_toLeftOf="@+id/right"
         android:gravity="center_vertical"
         android:textColor="#444444"
         android:ellipsize="end"
@@ -47,7 +47,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent" />
 
-    <TextView
+        <TextView
         android:id="@+id/song_album"
         android:textColor="#888888"
         android:layout_toRightOf="@+id/show_venue"
@@ -55,33 +55,51 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <TextView
-        android:id="@+id/show_date"
-        android:textColor="#888888"
-        android:textStyle="bold"
-        android:layout_alignParentRight="true"
-        android:gravity="right"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp" />
-        <TextView
-            android:id="@+id/show_location"
-            android:textColor="#888888"
+        <LinearLayout
+            android:id="@+id/right"
+            android:layout_width="wrap_content"
+            android:orientation="vertical"
             android:layout_alignParentRight="true"
-            android:layout_below="@+id/show_date"
-            android:gravity="right"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp" />
+            android:gravity="right|center_vertical"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/show_date"
+                android:textColor="#888888"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:gravity="right|center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="6dp"/>
+
+            <TextView
+                android:id="@+id/show_location"
+                android:textColor="#888888"
+                android:layout_marginBottom="6dp"
+                android:textSize="11sp"
+                android:layout_below="@+id/show_date"
+                android:gravity="right|center_vertical"
+                android:layout_width="wrap_content"
+                android:ellipsize="end"
+                android:lines="1"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+
+        </LinearLayout>
 
     </RelativeLayout>
 
     <View
-        android:id="@+id/border"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#eeeeee"
-        android:layout_alignParentBottom="true"/>
+    android:id="@+id/border"
+    android:layout_width="match_parent"
+    android:layout_height="1dp"
+    android:background="#eeeeee"
+    android:layout_alignParentBottom="true"/>
+
 </LinearLayout>
