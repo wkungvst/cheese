@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -415,6 +416,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     }
 
     private void populateNowPlaying(MainViewModel.ShowObject show){
+        Log.d("@@@", "main activity populate now playing");
         findViewById(R.id.total_shows).setVisibility(View.GONE);
         String title = show.title;
         String date = show.date;
@@ -431,6 +433,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         mLatestShowObject = data.getValue();
         ((TextView)findViewById(R.id.total_shows)).setText("SHOWS: " + data.getKey());
         ((TextView)findViewById(R.id.band_name)).setText("" +mBandName);
+        Log.d("@@@", " populate meta . latest show title : " + mLatestShowObject.title);
         ((TextView)findViewById(R.id.show_title)).setText("" + mLatestShowObject.title);
         ((TextView)findViewById(R.id.show_date)).setText("" + mLatestShowObject.date);
         ((TextView)findViewById(R.id.show_location)).setText("" + mLatestShowObject.location);
@@ -520,9 +523,11 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     }
 
     private void openNewBand(String band){
+        mMainViewModel.closePlayer();
         Intent intent = new Intent(MainActivity.this, MainActivity.class);
         intent.putExtra("BAND", band);
         startActivity(intent);
+        finish();
     }
 
     @Override

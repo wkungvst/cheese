@@ -30,5 +30,5 @@ dependencies {
     compile 'com.jakewharton.rxbinding:rxbinding-design:0.4.0'
     compile 'com.jakewharton.rxbinding:rxbinding-appcompat-v7:0.4.0'
     compile 'com.jakewharton.rxbinding:rxbinding-support-v4:0.4.0'
-    implementation files('/Users/bigwillie42/Downloads/java-json.jar')
+    implementation files('/Users/user/Downloads/java-json.jar')
 }

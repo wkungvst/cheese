@@ -9,4 +9,7 @@ import java.util.TreeMap;
 public interface ICatalogInterface {
     void populateList(TreeMap<Integer,Integer> yearData);
     void onBackPressed();
+
+     void setCurrentYear();
+
 }
