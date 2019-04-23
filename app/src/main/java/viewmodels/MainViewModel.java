@@ -29,6 +29,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 import exceptions.NetworkException;
 import helpers.Helper;
+import interfaces.ICatalogInterface;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 
@@ -116,6 +117,8 @@ public class MainViewModel {
         if(mCurrentShow.getValue() != null){
             openShow(mCurrentShow.getValue());
         }else if(mMetaData.getValue().getValue() != null){
+            Log.d("@@@" , " need to show latest show");
+
             openShow(mMetaData.getValue().getValue());
         }else{
             Log.d("@@@@", " current show is null");
@@ -315,6 +318,7 @@ public class MainViewModel {
     public void setSearchModeOn(Boolean on){
         mSearchModeOn.onNext(on);
     }
+
     private ArrayList<ShowObject> parseShowsOfYear(String response) throws JSONException{
         ArrayList<ShowObject> list = new ArrayList<>();
         JSONObject responseJSON = new JSONObject(response);
@@ -351,9 +355,31 @@ public class MainViewModel {
                     date,
                     description,
                     obj.getString("identifier")));
+        }try{
+            Collections.sort(list, new DateComparator());
+        }catch(Exception e){
+            Log.d("@@@", " collections sort: " + e);
         }
-        Collections.sort(list, new DateComparator());
-        return list;
+        return removeDuplicateShows(list);
+    }
+
+    private ArrayList<ShowObject> removeDuplicateShows(ArrayList<ShowObject> list){
+        ArrayList<ShowObject> temp = new ArrayList<>();
+        for(int i=0;i<list.size()-1;i++){
+            // different date or different location
+            if(!list.get(i).title.equals(list.get(i+1).title) || !list.get(i).date.equals(list.get(i+1).date)){
+                temp.add(list.get(i));
+            }else{
+              //  temp.add(list.get(i));
+                Log.d("@@@", " temp " + list.get(i).file + " list " + list.get(i).title);
+                Log.d("@@@", " temp 1 " + list.get(i+1).file + " list " + list.get(i+1).title);
+            }
+
+        }
+        if(list.size() > 0){
+            temp.add(list.get(list.size()-1));
+        }
+        return temp;
     }
 
     private void getMetaDataForBand(Context context, BAND band){
@@ -530,6 +556,7 @@ public class MainViewModel {
                         name = song.getString("name");
                         title = song.getString("title");
                         length = song.getString("length");
+                        Log.d("@@@", " length: " + length);
                         track = Integer.parseInt(song.getString("track"));
                         SongObject songObject = new SongObject(root, name, title, length, track);
                         results.add(songObject);

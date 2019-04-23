@@ -54,6 +54,7 @@ public class CatalogFragment extends Fragment implements ICatalogInterface, ISho
     RecyclerView mShowsRecyclerView;
     RecyclerView mSongsRecyclerView;
     CatalogAdapter mArrayAdapter;
+    TreeMap<Integer, Integer> mYearData;
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -71,6 +72,7 @@ public class CatalogFragment extends Fragment implements ICatalogInterface, ISho
 
         mPrimaryListView.setNestedScrollingEnabled(true);
         mPrimaryListView.setAdapter(mArrayAdapter);
+        mYearData = yearData;
     }
 
     @Override
@@ -78,15 +80,25 @@ public class CatalogFragment extends Fragment implements ICatalogInterface, ISho
         swapViews();
     }
 
+    @Override
+    public void setCurrentYear() {
+        Log.d("@@@", " show current year first");
+    }
+
     private void swapViews(){
-        //Log.d("@@@", " songs conatiner null? return? " + (mSongsContainer == null));
         if(mSongsContainer == null)return;
-        if(mSongsContainer.getVisibility() == View.VISIBLE){
+        if(mSongsContainer.getVisibility() == View.VISIBLE && mShowsRecyclerAdapter != null && mShowsRecyclerView != null){
             Log.d("@@@", "swap 1");
             mSongsContainer.setVisibility(View.GONE);
             mSecondaryContainer.setVisibility(View.VISIBLE);
         }else if(mSecondaryContainer.getVisibility() == View.VISIBLE){
             Log.d("@@@", "swap 2");
+            mSecondaryContainer.setVisibility(View.GONE);
+            mPrimaryContainer.setVisibility(View.VISIBLE);
+        }else{
+            Log.d("@@@", " swap 3");
+            populateList(mYearData);
+            mSongsContainer.setVisibility(View.GONE);
             mSecondaryContainer.setVisibility(View.GONE);
             mPrimaryContainer.setVisibility(View.VISIBLE);
         }
