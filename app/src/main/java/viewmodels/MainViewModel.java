@@ -91,9 +91,9 @@ public class MainViewModel {
 
     public MainViewModel(Context context){
         mContext =  context;
-        band_1 = new BandObject(STRING_CHEESE_INCIDENT, 1996, 2017, "String Cheese Incident", "StringCheeseIncident");
+        band_1 = new BandObject(STRING_CHEESE_INCIDENT, 1996, 2019, "String Cheese Incident", "StringCheeseIncident");
         band_2 = new BandObject(GRATEFUL_DEAD, 1965, 1995, "Grateful Dead", "GratefulDead");
-        band_3 = new BandObject(STS9, 1999, 2017, "Sound Tribe Sector 9", "SoundTribeSector9");
+        band_3 = new BandObject(STS9, 1999, 2019, "Sound Tribe Sector 9", "SoundTribeSector9");
         mBandsMap.put(band_1.getBandName(), band_1);
         mBandsMap.put(band_2.getBandName(), band_2);
         mBandsMap.put(band_3.getBandName(), band_3);
@@ -502,7 +502,7 @@ public class MainViewModel {
         String name = "" , album= "", title = "", length = "", link ="";
         int track = 0;
         for(int i=0;i<array.length();i++){
-            // mp3 format
+            // mp3 formatember
             JSONObject song = array.getJSONObject(i);
             if(array.getString(i).contains(".mp3")){
                 try{
